@@ -1,11 +1,4 @@
 const pdf = require("pdf-parse");
-
-// FIX: destructure BOTH functions by name. Before, this was:
-//   const generateInterviewReport = require("../services/ai.service");
-// which grabbed the WHOLE exports object { generateInterviewReport,
-// generateTailoredResumePdf }, not just the function — so calling it
-// directly as generateInterviewReport({...}) below would throw
-// "generateInterviewReport is not a function".
 const {
   generateInterviewReport,
   generateTailoredResumePdf,
@@ -51,7 +44,6 @@ async function getInterviewReportById(req, res) {
   try {
     const { interviewId } = req.params;
 
-    // Strip out the colon if it exists
     const cleanId = interviewId.startsWith(":")
       ? interviewId.slice(1)
       : interviewId;
@@ -61,9 +53,6 @@ async function getInterviewReportById(req, res) {
     });
 
     if (!interviewSingleReport) {
-      // FIX: added `return` here. Without it, the 200 response below would
-      // ALSO run right after this 404, causing a
-      // "Cannot set headers after they are sent" crash.
       return res.status(404).json({
         message: "Invalid Report not found",
       });
@@ -96,11 +85,6 @@ async function getAllInterviewReport(req, res) {
   }
 }
 
-// FIX: this whole function used to have a second, nested copy of itself
-// pasted inside it. That inner copy was never called (dead code), and the
-// OUTER function tried to use `pdfBuffer` — a variable that only existed
-// inside that dead inner copy — so it always crashed with
-// "pdfBuffer is not defined". This is now a single, clean function.
 const generateResumePdfController = async (req, res) => {
   try {
     const { interviewId } = req.params;
@@ -127,7 +111,7 @@ const generateResumePdfController = async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (error) {
-    console.error("========== PDF ERROR ==========");
+    console.error("PDF ERROR ===>>");
     console.error(error);
 
     res.status(500).json({

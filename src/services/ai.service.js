@@ -113,10 +113,10 @@ Rules:
 
       // console.log(response);
 
-      // console.log("=============== RESPONSE TEXT ===============");
+      // console.log("RESPONSE TEXT ===>>");
       console.log(response.text);
 
-      // console.log("=============== RESPONSE TYPE ===============");
+      // console.log("RESPONSE TYPE ===>>");
       // console.log(typeof response.text);
 
       // Uncomment this after checking the response

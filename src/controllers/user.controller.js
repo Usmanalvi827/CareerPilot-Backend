@@ -25,7 +25,7 @@ const UserController = async (req, res) => {
     });
 
     if (isUserExist) {
-      return res.status(409).json({ // Changed to 409 Conflict for existing resource
+      return res.status(409).json({ 
         message: "An account with this email address or username already exists.",
       });
     }
@@ -51,7 +51,7 @@ const UserController = async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: true, // Recommended for security
+      httpOnly: true, 
       secure: process.env.NODE_ENV === "production"
     });
 
@@ -67,7 +67,7 @@ const UserController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({
       message: "An internal server error occurred. Please try again later.",
     });
@@ -79,7 +79,6 @@ const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Use trim() to prevent users from bypassing validation with empty spaces
     if (!email?.trim() || !password) {
       return res.status(400).json({
         message: "Authentication failed: All fields are required.",
@@ -94,8 +93,6 @@ const loginController = async (req, res) => {
 
     const userFind = await UserModel.findOne({ email: email });
 
-    // Security tip: Use generic "Invalid credentials" messages for both email mismatch 
-    // and password mismatch so hackers cannot scan your database for registered emails.
     if (!userFind) {
       return res.status(401).json({ // Changed to 401 Unauthorized
         message: "Invalid credentials: The email or password provided is incorrect.",
@@ -121,13 +118,13 @@ const loginController = async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: true, // Recommended for security
+      httpOnly: true, 
       secure: process.env.NODE_ENV === "production"
     });
 
     return res.status(200).json({
       message: "Authentication successful. Welcome back!",
-      user: { // Changed plural "users" to singular "user" for accuracy
+      user: { 
         id: userFind._id,
         username: userFind.username,
         email: userFind.email,
@@ -135,9 +132,8 @@ const loginController = async (req, res) => {
     });
     
   } catch (err) {
-    console.log(err); // Fixed typo here (was consolr.log)
+    // console.log(err); 
     
-    // Always return a response if the server crashes, otherwise frontend stays stuck loading
     return res.status(500).json({
       message: "An internal server error occurred. Please try again later.",
     });
@@ -173,8 +169,6 @@ const getMeController = async (req, res) => {
       message: "Users Details Fetch Successfully!!",
       users: {
         id: user._id,
-        // FIX: added firstname/lastname here so the frontend can build
-        // real user initials instead of always falling back to email.
         firstname: user.firstname,
         lastname: user.lastname,
         username: user.username,
@@ -182,7 +176,7 @@ const getMeController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({ message: "Failed to fetch user details." });
   }
 };
