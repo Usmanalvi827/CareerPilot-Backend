@@ -13,21 +13,19 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+    ],
     credentials: true,
-  }),
+  })
 );
 
 app.use("/api/auth", authRouter);
 
 app.use("/api/interview-report", interviewRouter);
 
-// FIX: without this, an unexpected error anywhere in a route (e.g. a
-// thrown exception Express 5 auto-forwards to the error handler) would
-// fall through to Express's DEFAULT error handler, which sends back an
-// HTML error page instead of JSON. Your frontend always expects JSON
-// (it reads error.response?.data?.message), so an HTML response there
-// would silently break error messages. This makes every error JSON.
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({
@@ -35,6 +33,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log("Server Is Running!!!");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
