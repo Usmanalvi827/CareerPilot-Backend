@@ -8,7 +8,13 @@ const UserController = async (req, res) => {
   try {
     const { firstname, lastname, username, email, password } = req.body;
 
-    if (!firstname?.trim() || !lastname?.trim() || !username?.trim() || !email?.trim() || !password) {
+    if (
+      !firstname?.trim() ||
+      !lastname?.trim() ||
+      !username?.trim() ||
+      !email?.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         message: "Validation failed: All fields are required.",
       });
@@ -16,7 +22,8 @@ const UserController = async (req, res) => {
 
     if (password.length < 6) {
       return res.status(400).json({
-        message: "Password security requirement not met: Minimum 6 characters required.",
+        message:
+          "Password security requirement not met: Minimum 6 characters required.",
       });
     }
 
@@ -25,8 +32,9 @@ const UserController = async (req, res) => {
     });
 
     if (isUserExist) {
-      return res.status(409).json({ 
-        message: "An account with this email address or username already exists.",
+      return res.status(409).json({
+        message:
+          "An account with this email address or username already exists.",
       });
     }
 
@@ -49,10 +57,12 @@ const UserController = async (req, res) => {
       process.env.JWT_SECRET_TOKEN,
       { expiresIn: "1d" },
     );
-
+    
     res.cookie("token", token, {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === "production"
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 24 * 60 * 60 * 1000, // optional (1 day)
     });
 
     return res.status(201).json({
@@ -74,7 +84,6 @@ const UserController = async (req, res) => {
   }
 };
 
-
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -87,23 +96,28 @@ const loginController = async (req, res) => {
 
     if (password.length < 6) {
       return res.status(400).json({
-        message: "Password security requirement not met: Minimum 6 characters required.",
+        message:
+          "Password security requirement not met: Minimum 6 characters required.",
       });
     }
 
     const userFind = await UserModel.findOne({ email: email });
 
     if (!userFind) {
-      return res.status(401).json({ // Changed to 401 Unauthorized
-        message: "Invalid credentials: The email or password provided is incorrect.",
+      return res.status(401).json({
+        // Changed to 401 Unauthorized
+        message:
+          "Invalid credentials: The email or password provided is incorrect.",
       });
     }
 
     const isPasswordValid = await bcrypt.compare(password, userFind.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ // Changed to 401 Unauthorized
-        message: "Invalid credentials: The email or password provided is incorrect.",
+      return res.status(401).json({
+        // Changed to 401 Unauthorized
+        message:
+          "Invalid credentials: The email or password provided is incorrect.",
       });
     }
 
@@ -117,29 +131,30 @@ const loginController = async (req, res) => {
       { expiresIn: "1d" },
     );
 
-    res.cookie("token", token, {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === "production"
+       res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 24 * 60 * 60 * 1000, // optional (1 day)
     });
+
 
     return res.status(200).json({
       message: "Authentication successful. Welcome back!",
-      user: { 
+      user: {
         id: userFind._id,
         username: userFind.username,
         email: userFind.email,
       },
     });
-    
   } catch (err) {
-    // console.log(err); 
-    
+    // console.log(err);
+
     return res.status(500).json({
       message: "An internal server error occurred. Please try again later.",
     });
   }
 };
-
 
 const logoutController = async (req, res) => {
   const token = req.cookies.token;
@@ -150,7 +165,11 @@ const logoutController = async (req, res) => {
     });
   }
 
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  });
 
   res.status(200).json({
     message: "User Logged out Sucessfully!!",
